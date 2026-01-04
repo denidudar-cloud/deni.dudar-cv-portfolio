@@ -1,0 +1,655 @@
+<html lang="en" class="scroll-smooth"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merging features - Denis Dudar</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: {
+                            main: '#0a051e',
+                            secondary: '#0e0725',
+                        },
+                        border: {
+                            subtle: 'rgba(255, 255, 255, 0.08)',
+                            light: 'rgba(255, 255, 255, 0.12)',
+                            active: 'rgba(255, 255, 255, 0.2)',
+                        },
+                        text: {
+                            muted: 'rgba(255, 255, 255, 0.6)',
+                            faint: 'rgba(255, 255, 255, 0.4)',
+                        },
+                        accent: '#c084fc',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    transitionTimingFunction: {
+                        'sakura': 'cubic-bezier(0.16, 1, 0.3, 1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a051e;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* SAKURA System Keyframes */
+        @keyframes reveal-up { 
+            0% { clip-path: inset(100% 0 0 0); transform: translateY(40px); opacity: 0; } 
+            100% { clip-path: inset(0 0 0 0); transform: translateY(0); opacity: 1; } 
+        }
+        @keyframes beam-v { 
+            0% { top: -200px; opacity: 0; } 
+            10% { opacity: 1; } 
+            90% { opacity: 1; } 
+            100% { top: 100%; opacity: 0; } 
+        }
+        @keyframes beam-h { 
+            0% { left: -200px; opacity: 0; } 
+            10% { opacity: 1; } 
+            71% { opacity: 1; } 
+            90% { opacity: 1; } 
+            100% { left: 100%; opacity: 0; } 
+        }
+
+        /* Utility Classes from SAKURA */
+        .animate-reveal {
+            opacity: 0;
+            animation: reveal-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Scroll Trigger Classes */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Delays */
+        .delay-100 { animation-delay: 0.1s; transition-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; transition-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; transition-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; transition-delay: 0.4s; }
+
+        /* Infinite Beams */
+        .beam-v {
+            position: absolute;
+            width: 1px;
+            height: 200px;
+            background: linear-gradient(180deg, transparent, #c084fc, transparent);
+            z-index: 10;
+            opacity: 0;
+            animation: beam-v 7s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            left: 0;
+            right: 0;
+            margin: auto;
+            pointer-events: none;
+        }
+        .beam-h {
+            position: absolute;
+            height: 1px;
+            width: 200px;
+            background: linear-gradient(90deg, transparent, #c084fc, transparent);
+            z-index: 10;
+            opacity: 0;
+            animation: beam-h 5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            pointer-events: none;
+        }
+
+        /* Flashlight Effect - Container */
+        .group {
+            position: relative;
+            --mouse-x: 0px;
+            --mouse-y: 0px;
+        }
+
+        /* Flashlight - Surface Overlay */
+        .flashlight-surface {
+            position: absolute; 
+            inset: 0; 
+            opacity: 0; 
+            transition: opacity 300ms; 
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.04), transparent 40%); 
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Flashlight - Border Overlay */
+        .flashlight-border {
+            position: absolute; 
+            inset: 0; 
+            opacity: 0; 
+            transition: opacity 300ms; 
+            background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.3), transparent 40%); 
+            z-index: 20; 
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); 
+            -webkit-mask-composite: xor; 
+            mask-composite: exclude; 
+            padding: 1px;
+            pointer-events: none;
+        }
+
+        .group:hover .flashlight-surface,
+        .group:hover .flashlight-border {
+            opacity: 1;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .blob { animation: float 10s ease-in-out infinite; }
+        @keyframes float {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+    </style>
+</head>
+<body class="selection:bg-accent selection:text-black overflow-x-hidden">
+
+    <!-- Background (component) added by Aura -->
+    <div class="aura-background-component fixed top-0 w-full h-screen -z-10" data-alpha-mask="80" style="; mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent)"><div class="aura-background-component top-0 w-full -z-10 absolute h-full">
+      <div data-us-project="HzcaAbRLaALMhHJp8gLY" class="absolute w-full h-full left-0 top-0 -z-10"></div>
+      <script type="text/javascript">
+        !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+      </script>
+    </div></div>
+
+    <!-- Fixed Grid Background -->
+    <div class="fixed inset-0 pointer-events-none z-0 flex justify-center w-full max-w-[1600px] mx-auto px-4 md:px-[6%]">
+        <div class="w-full h-full border-x border-border-subtle grid grid-cols-4">
+            <div class="border-r border-border-subtle h-full hidden md:block relative overflow-hidden">
+                <!-- Vertical Beam -->
+                <div class="beam-v opacity-30"></div>
+            </div>
+            <div class="border-r border-border-subtle h-full hidden md:block"></div>
+            <div class="border-r border-border-subtle h-full hidden md:block"></div>
+        </div>
+    </div>
+
+    <!-- Main Wrapper -->
+    <div class="md:px-[6%] max-w-[1600px] z-10 mr-auto ml-auto pr-4 pl-4 relative">
+        
+        <!-- Header -->
+        <header class="border-x border-border-subtle bg-bg-main/80 backdrop-blur-md sticky top-0 z-50 animate-reveal delay-100">
+            <div class="grid grid-cols-1 md:grid-cols-4 border-b border-border-subtle">
+                <!-- Logo -->
+                <div class="p-6 md:p-8 flex items-center justify-between md:justify-start group border-r border-border-subtle relative">
+                    <a href="index.html" class="relative w-12 h-12 rounded-sm overflow-hidden border border-border-light group-hover:border-accent transition-colors duration-500 block">
+                        <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/b45618e2-478a-4dc9-bf47-068fc90e8c7f_320w.png?w=800&amp;q=80" alt="Denis Dudar" class="group-hover:grayscale-0 transition-all duration-500 w-full h-full object-cover bg-center grayscale">
+                    </a>
+                    <button class="md:hidden text-text-muted transition-transform active:scale-95" onclick="toggleMenu()" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" id="menu-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+                    </button>
+                </div>
+                <!-- Nav Items -->
+                <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="hidden md:flex group p-6 md:p-8 items-center justify-between hover:bg-white/[0.02] transition-colors border-r border-border-subtle">
+                    <span class="text-sm font-normal text-text-muted group-hover:text-white transition-colors">Resume/CV</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text w-4 h-4 text-border-active group-hover:text-accent transition-colors group-hover:translate-x-1 duration-200"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                </a>
+                <a href="portfolio.html" class="hidden md:flex group p-6 md:p-8 items-center justify-between bg-white/[0.02] transition-colors border-r border-border-subtle">
+                    <span class="text-sm font-normal text-white transition-colors">Portfolio</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-accent transition-colors translate-x-1 duration-200"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                </a>
+                <a href="about.html" class="hidden md:flex group p-6 md:p-8 items-center justify-between hover:bg-white/[0.02] transition-colors">
+                    <span class="text-sm font-normal text-text-muted group-hover:text-white transition-colors">About</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent transition-colors group-hover:translate-x-1 duration-200"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                </a>
+            </div>
+            
+        </header>
+
+        <!-- Mobile Menu Overlay - Template -->
+        <template id="mobile-menu-template">
+            <div id="mobile-menu" class="hidden fixed inset-0 z-[9999]" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
+                <div class="absolute inset-0 bg-bg-main/95 backdrop-blur-xl transition-opacity" onclick="toggleMenu()"></div>
+                <div class="relative h-full w-full flex flex-col p-8 z-20 pointer-events-auto">
+                    <div class="flex justify-between items-center mb-16">
+                        <div class="w-12 h-12 rounded-sm overflow-hidden border border-border-light relative">
+                            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/b45618e2-478a-4dc9-bf47-068fc90e8c7f_320w.png?w=800&amp;q=80" alt="Denis Dudar" class="w-full h-full object-cover grayscale opacity-80">
+                        </div>
+                        <button class="p-2 text-text-muted hover:text-white transition-colors" onclick="toggleMenu()" aria-label="Close menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                        </button>
+                    </div>
+                    <nav class="flex flex-col gap-8">
+                        <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>Resume/CV</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                        <a href="portfolio.html" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>Portfolio</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                        <a href="about.html" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>About</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <main class="border-x border-border-subtle bg-bg-main min-h-screen">
+            <!-- 1. Hero Section -->
+            <section class="border-b border-border-subtle pt-12 md:pt-24 lg:pt-32 pb-12 md:pb-16 lg:pb-20 px-8 md:px-12 lg:px-16 relative overflow-hidden">
+                <div class="max-w-4xl mx-auto text-center z-10 relative">
+                    <div class="flex items-center justify-center gap-2 mb-6 animate-reveal">
+                        <div class="w-2 h-2 rounded-full bg-accent"></div>
+                        <span class="text-sm font-mono text-accent uppercase tracking-widest">SaaS / Enterprise</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white mb-12 animate-reveal delay-100 leading-tight">
+                        Merging features of three conferencing tools into a unified internal solution.
+                    </h1>
+                </div>
+            </section>
+            
+            <!-- Hero Image Edge-to-Edge -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle relative overflow-hidden rounded-none border-b border-border-subtle animate-reveal delay-200 group">
+                     <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                     <img src="project-hero-laptop.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop';" alt="Project Mockup" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 2. Client & Overview -->
+            <section class="border-b border-border-subtle">
+                <!-- Client Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 border-b border-border-subtle">
+                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h3 class="text-xl font-medium text-white scroll-reveal">About the client</h3>
+                    </div>
+                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                            A global technology company providing communication solutions for enterprise businesses. They were managing three distinct legacy tools for video conferencing, each with its own codebase and user base, leading to high maintenance costs and fragmented user experiences.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Overview Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h3 class="text-xl font-medium text-white scroll-reveal">Overview</h3>
+                    </div>
+                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                            The goal was to consolidate the best features of all three platforms into a single, modern web application. This unified solution needed to scale for thousands of concurrent users while offering a seamless experience for both hosts and participants.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Large Person Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] overflow-hidden group border-b border-border-subtle relative">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="project-feature-ui.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1976&auto=format&fit=crop';" alt="Feature Interface" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 4. Challenges & Results -->
+            <section class="border-b border-border-subtle">
+                 <!-- Challenges Row -->
+                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 border-b border-border-subtle">
+                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h3 class="text-xl font-medium text-white scroll-reveal">Challenges</h3>
+                    </div>
+                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <ul class="space-y-4 text-lg text-text-muted font-light list-disc list-inside scroll-reveal delay-100">
+                            <li>Inconsistent UI patterns across legacy tools.</li>
+                            <li>Complex permission settings for enterprise hosts.</li>
+                            <li>Need for real-time analytics without performance lag.</li>
+                            <li>Resistance to change from long-time users of legacy tools.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Results Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h3 class="text-xl font-medium text-white scroll-reveal">Results</h3>
+                    </div>
+                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <ul class="space-y-4 text-lg text-text-muted font-light list-disc list-inside scroll-reveal delay-100">
+                            <li>Reduced maintenance costs by 40% by unifying codebases.</li>
+                            <li>Increased user adoption rate by 25% within the first quarter.</li>
+                            <li>Positive feedback on the simplified scheduling workflow.</li>
+                            <li>Improved accessibility score to WCAG AA standards.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Blue/Dark Mockup Section (Edge-to-Edge Image) -->
+            <section class="border-b border-border-subtle bg-[#0c0621]">
+                <div class="w-full aspect-[2/1] relative overflow-hidden border-b border-border-subtle group">
+                     <img src="project-dashboard-ui.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop';" alt="Dashboard UI" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 6. Our Approach -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <div class="max-w-4xl">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-8 scroll-reveal">Our approach .</h2>
+                    <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                        We started with a comprehensive audit of all three existing platforms. By mapping out every feature and user flow, we identified redundancies and gaps. We then conducted stakeholder interviews to prioritize features for the MVP. The design phase focused on creating a scalable component library that could support future growth.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 7. UX/UI Focus -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <div class="mb-12">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Main focus of our UX/UI change</h2>
+                    <p class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        Simplifying the interface was key. We moved away from cluttered toolbars to a contextual action menu that appears only when needed.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Large Image for UX Focus (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="project-ux-focus.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop';" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000" alt="UI Focus Screen">
+                </div>
+            </section>
+
+            <!-- 8. Participant View -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Participant view</h2>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                            For participants, the priority was ease of joining. We implemented a "one-click join" feature that bypasses login for guest users, while still maintaining security protocols. The in-call view highlights the active speaker and offers intuitive controls for muting and sharing.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Participant View Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-[#0c0621] overflow-hidden border-b border-border-subtle relative group">
+                     <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="project-participant-view.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop';" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000" alt="Participant view">
+                </div>
+            </section>
+
+            <!-- 9. Host View -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Host view</h2>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                            Hosts needed powerful controls without complexity. We designed a modular dashboard where hosts can manage breakout rooms, polls, and Q&A sessions. A dedicated "Backstage" area allows hosts and moderators to coordinate privately during live events.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Host View Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-[#0c0621] overflow-hidden border-b border-border-subtle relative group">
+                     <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="project-host-view.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=2070&auto=format&fit=crop';" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000" alt="Host view">
+                </div>
+            </section>
+
+            <!-- 10. Large Laptop View (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/20 to-transparent z-10"></div>
+                    <img src="project-full-interface.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop';" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000" alt="Full Interface View">
+                </div>
+            </section>
+
+            <!-- 11. Report Customization -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <div class="mb-0 max-w-4xl">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Report customization</h2>
+                    <p class="text-lg text-text-muted font-light scroll-reveal delay-100">
+                        Post-event analytics were crucial. We built a drag-and-drop report builder allowing admins to visualize attendance, engagement, and technical performance metrics.
+                    </p>
+                </div>
+            </section>
+            
+            <!-- Report Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-[#0c0621] relative overflow-hidden border-b border-border-subtle group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="project-report-screen.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop';" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000" alt="Report Screen">
+                </div>
+            </section>
+
+            <!-- 13. Dev Support -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <div class="mb-0">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Ensure metrics and dev support</h2>
+                    <p class="text-lg text-text-muted font-light max-w-3xl scroll-reveal delay-100">
+                        We worked closely with the development team to ensure that the design system was implemented correctly. Regular audits and a shared Figma-to-Code workflow helped maintain high fidelity between design and production. We also established key performance indicators to track the success of the new features.
+                    </p>
+                </div>
+            </section>
+            
+            <!-- Dev Support Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="project-dev-support.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?q=80&w=2070&auto=format&fit=crop';" alt="Development support" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 14. View Other Work -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <h3 class="text-2xl font-medium text-white mb-8 scroll-reveal">View Other Work</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <a href="#" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-100">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/e653544d-6a75-4821-9c72-3993a12da088_800w.png" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Project 1">
+                        </div>
+                        <div class="p-6 bg-[#0c0621]">
+                            <h4 class="text-lg font-medium text-white group-hover:text-accent transition-colors">Payroll management system</h4>
+                            <span class="text-sm text-text-muted">Fintech</span>
+                        </div>
+                    </a>
+                    <a href="#" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-200">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/34947f57-9ab5-41c8-9683-e8d61d153345_800w.png?w=800&amp;q=80" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Project 2">
+                        </div>
+                        <div class="p-6 bg-[#0c0621]">
+                            <h4 class="text-lg font-medium text-white group-hover:text-accent transition-colors">Sustainable property investment</h4>
+                            <span class="text-sm text-text-muted">Real Estate</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 15. CTA Section (Copied from index.html/about.html) -->
+            <section class="relative border-b border-border-subtle overflow-hidden scroll-reveal">
+                <div class="absolute inset-0 z-0 bg-black">
+                    <div class="absolute top-[-20%] left-[10%] w-[500px] h-[500px] bg-accent/20 rounded-full blur-[100px] blob"></div>
+                    <div class="absolute bottom-[-10%] right-[20%] w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[80px] blob" style="animation-delay: -2s;"></div>
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20"></div>
+                </div>
+
+                <div class="z-10 md:p-24 lg:p-32 flex flex-col md:flex-row gap-12 pt-12 pr-12 pb-12 pl-12 relative gap-x-12 gap-y-12 items-center justify-between">
+                    <div class="max-w-2xl">
+                        <h2 class="text-4xl font-medium text-white tracking-tight mb-6 drop-shadow-xl md:text-4xl">Have a Great Idea?</h2>
+                        <p class="text-lg font-light text-white/70 max-w-lg">
+                            7+ years of experience in interface design. I help both startups and enterprises design and launch successful digital products.
+                        </p>
+                    </div>
+                    
+                    <div class="w-full md:w-auto">
+                        <button class="group relative overflow-hidden bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 px-10 py-6 rounded-sm transition-all duration-300 hover:scale-105" style="--mouse-x: 187.9388427734375px; --mouse-y: 82.995361328125px;">
+                            <span class="z-10 uppercase group-hover:text-white flex items-center gap-3 text-xs font-bold text-white tracking-widest relative">
+                                Get In Contact
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-right" strokewidth="1.5" class="lucide lucide-arrow-right w-4 h-4 transition-transform group-hover:translate-x-1"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/20 to-accent/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Footer -->
+            <footer class="bg-bg-main relative z-10 scroll-reveal">
+                <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border-subtle border-b border-border-subtle">
+                    <a href="https://www.linkedin.com/in/denis-dudar-88274a164/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Linkedin</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="https://dribbble.com/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Dribbble</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="https://www.instagram.com/den.dudar/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Instagram</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Resume/CV</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                </div>
+
+                <div class="p-8 md:p-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-8 text-sm font-light text-text-muted">
+                    <div class="flex flex-col gap-2">
+                        <a href="mailto:deni.dudar@gmail.com" class="hover:text-white transition-colors">deni.dudar@gmail.com</a>
+                        <span class="font-mono text-xs opacity-50">+380 63 742 09 82</span>
+                    </div>
+                    
+                    <div class="flex flex-col md:items-end gap-2 text-right">
+                        <span>Lviv, Ukraine</span>
+                        <span class="flex items-center gap-2">
+                            Work at <span class="text-white font-normal">Cieden</span>
+                        </span>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- SAKURA Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons({
+            attrs: {
+                strokeWidth: 1.5
+            }
+        });
+        
+        // Mobile Menu Logic
+        function toggleMenu() {
+            let menu = document.getElementById('mobile-menu');
+            
+            // If menu doesn't exist in DOM, clone it from template to body
+            if (!menu) {
+                const template = document.getElementById('mobile-menu-template');
+                if (template) {
+                    const clone = template.content.cloneNode(true);
+                    document.body.appendChild(clone);
+                    menu = document.getElementById('mobile-menu');
+                    
+                    // Add listeners to new links
+                    menu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            toggleMenu();
+                        });
+                    });
+                }
+            }
+
+            const menuBtn = document.getElementById('menu-btn');
+            const body = document.body;
+            const isHidden = menu.classList.contains('hidden');
+            
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                body.style.overflow = 'hidden';
+                menuBtn.setAttribute('aria-expanded', 'true');
+                // Focus trap - focus close button
+                const closeBtn = menu.querySelector('button');
+                if(closeBtn) setTimeout(() => closeBtn.focus(), 50);
+            } else {
+                menu.classList.add('hidden');
+                body.style.overflow = '';
+                menuBtn.setAttribute('aria-expanded', 'false');
+                menuBtn.focus();
+            }
+        }
+
+        // Close menu on link click
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                const menu = document.getElementById('mobile-menu');
+                if (!menu.classList.contains('hidden')) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            const menu = document.getElementById('mobile-menu');
+            if (e.key === 'Escape' && menu && !menu.classList.contains('hidden')) {
+                toggleMenu();
+            }
+        });
+
+
+        // Scroll Observer (SAKURA Step 3)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+        // Mouse Tracker (SAKURA Flashlight)
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+
+</body></html>
