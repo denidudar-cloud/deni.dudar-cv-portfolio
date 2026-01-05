@@ -1,0 +1,756 @@
+<html lang="en" class="scroll-smooth"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainable Property Investment - Denis Dudar</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: {
+                            main: '#0a051e',
+                            secondary: '#0e0725',
+                        },
+                        border: {
+                            subtle: 'rgba(255, 255, 255, 0.08)',
+                            light: 'rgba(255, 255, 255, 0.12)',
+                            active: 'rgba(255, 255, 255, 0.2)',
+                        },
+                        text: {
+                            muted: 'rgba(255, 255, 255, 0.6)',
+                            faint: 'rgba(255, 255, 255, 0.4)',
+                        },
+                        accent: '#c084fc',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    transitionTimingFunction: {
+                        'sakura': 'cubic-bezier(0.16, 1, 0.3, 1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a051e;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* SAKURA System Keyframes */
+        @keyframes reveal-up { 
+            0% { clip-path: inset(100% 0 0 0); transform: translateY(40px); opacity: 0; } 
+            100% { clip-path: inset(0 0 0 0); transform: translateY(0); opacity: 1; } 
+        }
+        @keyframes beam-v { 
+            0% { top: -200px; opacity: 0; } 
+            10% { opacity: 1; } 
+            90% { opacity: 1; } 
+            100% { top: 100%; opacity: 0; } 
+        }
+        @keyframes beam-h { 
+            0% { left: -200px; opacity: 0; } 
+            10% { opacity: 1; } 
+            71% { opacity: 1; } 
+            90% { opacity: 1; } 
+            100% { left: 100%; opacity: 0; } 
+        }
+
+        /* Utility Classes from SAKURA */
+        .animate-reveal {
+            opacity: 0;
+            animation: reveal-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Scroll Trigger Classes */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Delays */
+        .delay-100 { animation-delay: 0.1s; transition-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; transition-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; transition-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; transition-delay: 0.4s; }
+
+        /* Infinite Beams */
+        .beam-v {
+            position: absolute;
+            width: 1px;
+            height: 200px;
+            background: linear-gradient(180deg, transparent, #c084fc, transparent);
+            z-index: 10;
+            opacity: 0;
+            animation: beam-v 7s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            left: 0;
+            right: 0;
+            margin: auto;
+            pointer-events: none;
+        }
+        .beam-h {
+            position: absolute;
+            height: 1px;
+            width: 200px;
+            background: linear-gradient(90deg, transparent, #c084fc, transparent);
+            z-index: 10;
+            opacity: 0;
+            animation: beam-h 5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            pointer-events: none;
+        }
+
+        /* Flashlight Effect - Container */
+        .group {
+            position: relative;
+            --mouse-x: 0px;
+            --mouse-y: 0px;
+        }
+
+        /* Flashlight - Surface Overlay */
+        .flashlight-surface {
+            position: absolute; 
+            inset: 0; 
+            opacity: 0; 
+            transition: opacity 300ms; 
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.04), transparent 40%); 
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Flashlight - Border Overlay */
+        .flashlight-border {
+            position: absolute; 
+            inset: 0; 
+            opacity: 0; 
+            transition: opacity 300ms; 
+            background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.3), transparent 40%); 
+            z-index: 20; 
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); 
+            -webkit-mask-composite: xor; 
+            mask-composite: exclude; 
+            padding: 1px;
+            pointer-events: none;
+        }
+
+        .group:hover .flashlight-surface,
+        .group:hover .flashlight-border {
+            opacity: 1;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .blob { animation: float 10s ease-in-out infinite; }
+        @keyframes float {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+    </style>
+</head>
+<body class="selection:bg-accent selection:text-black overflow-x-hidden">
+
+    <!-- Background (component) added by Aura -->
+    <div class="aura-background-component fixed top-0 w-full h-screen -z-10" data-alpha-mask="80" style="; mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent)"><div class="aura-background-component top-0 w-full -z-10 absolute h-full">
+      <div data-us-project="HzcaAbRLaALMhHJp8gLY" class="absolute w-full h-full left-0 top-0 -z-10"></div>
+      <script type="text/javascript">
+        !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+      </script>
+    </div></div>
+
+    <!-- Fixed Grid Background -->
+    <div class="fixed inset-0 pointer-events-none z-0 flex justify-center w-full max-w-[1600px] mx-auto px-4 md:px-[6%]">
+        <div class="w-full h-full border-x border-border-subtle grid grid-cols-4">
+            <div class="border-r border-border-subtle h-full hidden md:block relative overflow-hidden">
+                <!-- Vertical Beam -->
+                <div class="beam-v opacity-30"></div>
+            </div>
+            <div class="border-r border-border-subtle h-full hidden md:block"></div>
+            <div class="border-r border-border-subtle h-full hidden md:block"></div>
+        </div>
+    </div>
+
+    <!-- Main Wrapper -->
+    <div class="md:px-[6%] max-w-[1600px] z-10 mr-auto ml-auto pr-4 pl-4 relative">
+        
+        <!-- Header -->
+        <header class="border-x border-border-subtle bg-bg-main/80 backdrop-blur-md sticky top-0 z-50 animate-reveal delay-100">
+            <div class="grid grid-cols-1 md:grid-cols-4 border-b border-border-subtle">
+                <!-- Logo -->
+                <div class="p-6 md:p-8 flex items-center justify-between md:justify-start group border-r border-border-subtle relative">
+                    <a href="index.html" class="relative w-12 h-12 rounded-sm overflow-hidden border border-border-light group-hover:border-accent transition-colors duration-500 block">
+                        <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/b45618e2-478a-4dc9-bf47-068fc90e8c7f_320w.png?w=800&amp;q=80" alt="Denis Dudar" class="group-hover:grayscale-0 transition-all duration-500 w-full h-full object-cover bg-center grayscale">
+                    </a>
+                    <button class="md:hidden text-text-muted transition-transform active:scale-95" onclick="toggleMenu()" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" id="menu-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+                    </button>
+                </div>
+                <!-- Nav Items -->
+                <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="hidden md:flex group p-6 md:p-8 items-center justify-between hover:bg-white/[0.02] transition-colors border-r border-border-subtle">
+                    <span class="text-sm font-normal text-text-muted group-hover:text-white transition-colors">Resume/CV</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text w-4 h-4 text-border-active group-hover:text-accent transition-colors group-hover:translate-x-1 duration-200"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                </a>
+                <a href="portfolio.html" class="hidden md:flex group p-6 md:p-8 items-center justify-between bg-white/[0.02] transition-colors border-r border-border-subtle">
+                    <span class="text-sm font-normal text-white transition-colors">Portfolio</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-accent transition-colors translate-x-1 duration-200"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                </a>
+                <a href="about.html" class="hidden md:flex group p-6 md:p-8 items-center justify-between hover:bg-white/[0.02] transition-colors">
+                    <span class="text-sm font-normal text-text-muted group-hover:text-white transition-colors">About</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent transition-colors group-hover:translate-x-1 duration-200"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                </a>
+            </div>
+            
+        </header>
+
+        <!-- Mobile Menu Overlay - Template -->
+        <template id="mobile-menu-template">
+            <div id="mobile-menu" class="hidden fixed inset-0 z-[9999]" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
+                <div class="absolute inset-0 bg-bg-main/95 backdrop-blur-xl transition-opacity" onclick="toggleMenu()"></div>
+                <div class="relative h-full w-full flex flex-col p-8 z-20 pointer-events-auto">
+                    <div class="flex justify-between items-center mb-16">
+                        <div class="w-12 h-12 rounded-sm overflow-hidden border border-border-light relative">
+                            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/b45618e2-478a-4dc9-bf47-068fc90e8c7f_320w.png?w=800&amp;q=80" alt="Denis Dudar" class="w-full h-full object-cover grayscale opacity-80">
+                        </div>
+                        <button class="p-2 text-text-muted hover:text-white transition-colors" onclick="toggleMenu()" aria-label="Close menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                        </button>
+                    </div>
+                    <nav class="flex flex-col gap-8">
+                        <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>Resume/CV</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                        <a href="portfolio.html" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>Portfolio</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                        <a href="about.html" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>About</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <main class="border-x border-border-subtle bg-bg-main min-h-screen">
+            <!-- 1. Hero Section -->
+            <section class="border-b border-border-subtle pt-12 md:pt-24 lg:pt-32 pb-12 md:pb-16 lg:pb-20 px-8 md:px-12 lg:px-16 relative overflow-hidden">
+                <div class="max-w-4xl mx-auto text-center z-10 relative">
+                    <div class="flex items-center justify-center gap-2 mb-6 animate-reveal">
+                        <div class="w-2 h-2 rounded-full bg-accent"></div>
+                        <span class="text-sm font-mono text-accent uppercase tracking-widest">Real Estate</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white mb-12 animate-reveal delay-100 leading-tight">
+                        Revamped UX design for a sustainable property investment project.
+                    </h1>
+                </div>
+            </section>
+            
+            <!-- Hero Image Edge-to-Edge -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle relative overflow-hidden rounded-none border-b border-border-subtle animate-reveal delay-200 group">
+                     <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10 pointer-events-none"></div>
+                     <!-- Placeholder for IMG 1 -->
+                     <img src="sustainable-hero.png" alt="Project Mockup" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 2. Client & Overview -->
+            <section class="border-b border-border-subtle">
+                <!-- Client Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 border-b border-border-subtle">
+                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">About the client</h2>
+                    </div>
+                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                            Carbon Lighthouse is a forward-thinking company dedicated to helping commercial real estate owners increase their income by implementing energy-efficient building improvement projects and harnessing cutting-edge technologies. The company empowers CRE owners to maximize their return on investment while contributing to a cleaner environment. Founded in 2010, Carbon Lighthouse has amassed an impressive track record, impacting over 1,500 buildings across the United States.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Overview Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">Overview</h2>
+                    </div>
+                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 mb-6">
+                            A client with a real estate CMS tool, turned to us to update and streamline the UX of the product based on our in-depth research of the market landscape. Taking into account that end users considered the previous app design confusing and difficult to understand and navigate, our goal was to fully reimagine the UX/UI design of this product.
+                        </p>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 mb-6">
+                            We quickly onboarded 3 specialists to work on the project and conducted an exhaustive UX audit of the app as well as analyzed the needs and preferences of the end users. Our team brainstormed all the data gathered and generated multiple design layout options while making sure they align with both core business objectives and user needs.
+                        </p>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                            After the validation of the main design and color palette, we came up with a style guide and developed an extensive UI kit so a client can move on with the development process. Also, during our collaboration, we created a responsive mobile version of the web application design to ensure a seamless experience across devices.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] overflow-hidden group border-b border-border-subtle relative bg-border-subtle">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <!-- Placeholder for IMG 2 -->
+                    <img src="sustainable-overview.png" alt="Overview Interface" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 4. Challenges & Results -->
+            <section class="border-b border-border-subtle">
+                 <!-- Challenges Row -->
+                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 border-b border-border-subtle">
+                    <div class="lg:col-span-4 px-8 md:px-12 lg:px-16 pt-[104px] pb-10 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">Challenges</h2>
+                    </div>
+                    <div class="lg:col-span-8 px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                        <ul class="space-y-4 text-lg text-text-muted font-light list-disc list-inside scroll-reveal delay-100">
+                            <li>face the difficulty of designing charts and graphics to visualize a large amount of data;</li>
+                            <li>work under tight deadlines and fast-paced processes;</li>
+                            <li>adapt quickly to expanding client requests while maintaining the quality of work;</li>
+                            <li>dive into a challenging industry to identify user needs;</li>
+                            <li>rectify design patterns from a previous agency that didn't meet the client's expectations;</li>
+                            <li>redesign and improve the product to enhance usability and purpose clarity for end-users;</li>
+                            <li>take on a consultative role, offering ideas, and brainstorm regarding the UX for the product.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Results Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">Results</h2>
+                    </div>
+                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <ul class="space-y-4 text-lg text-text-muted font-light list-disc list-inside scroll-reveal delay-100">
+                            <li>conducted a comprehensive analysis of existing results, materials, user interviews, feedback, and documents to gain valuable insights;</li>
+                            <li>performed an exhaustive UX audit of the app;</li>
+                            <li>engaged in creative brainstorming sessions to generate a wide range of design ideas;</li>
+                            <li>executed a redesign to improve usability and address outdated design elements;</li>
+                            <li>developed a UI kit and style guide, refreshed the colors to align with company's current tone of voice and branding;</li>
+                            <li>expanded our scope and took on additional tasks, including branding assistance with brochures and ensuring visual consistency, as the project progressed;</li>
+                            <li>provided ongoing consultation and collaborated closely with the client to offer ideas and solutions for the UX design;</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle bg-[#0c0621]">
+                <div class="w-full aspect-[2/1] relative overflow-hidden border-b border-border-subtle group">
+                     <!-- Placeholder for IMG 3 -->
+                     <img src="sustainable-results.png" alt="Results Visualization" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 6. Main Focus -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-0">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Main focus of our UX/UI design</h2>
+                    <div class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        <p class="mb-4">Based on the results of our brainstorming session and thorough analysis of competitors and user feedback, we have prioritized the following areas of focus:</p>
+                        <ul class="list-disc list-inside mb-4 pl-4 space-y-2">
+                            <li>ensuring readability, clarity, and effective contrast of the overall design;</li>
+                            <li>implementing gamification elements to encourage users to provide the extensive data required for generating accurate reports;</li>
+                            <li>emphasizing data visualization while maintaining a minimalist and uncluttered interface;</li>
+                            <li>shifting our focus towards text-based communication as the true essence of the platform lies in the data itself.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <!-- Placeholder for IMG 4 -->
+                    <img src="sustainable-ux-focus.png" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000" alt="UX Focus">
+                </div>
+            </section>
+
+            <!-- 8. Our Approach -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="max-w-4xl">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-8 scroll-reveal">Our approach .</h2>
+                    <div class="space-y-6 text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                        <p>
+                            The client came to us with the request to deliver this project within tight timeframes and we agreed as we pride ourselves on our ability to work quickly and efficiently. Our fast-paced work style doesn't compromise on quality; rather, it enables us to meet deadlines while maintaining a high standard of work.
+                        </p>
+                        <p>
+                            By actively incorporating the client's feedback, we ensured that all concerns or adjustments were addressed promptly and the final product was aligned with their vision and expectations. In addition, we offered the client a diverse range of design concept options they needed to empower them to make informed decisions based on their goals.
+                        </p>
+                        <p>
+                            It all contributed to seamless collaboration, fostering a strong working relationship and an impactful final deliverable. As a result, the client was delighted with the project's success and returned to work with us on other projects they had in the pipeline.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 9. Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-[#0c0621] overflow-hidden border-b border-border-subtle relative group">
+                     <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10 pointer-events-none"></div>
+                    <img src="sustainable-approach.png" class="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" alt="Approach Visual">
+                    <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                        <source src="sustainable-approach.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </section>
+
+            <!-- 10. Building Overview -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Building overview & engaging forms</h2>
+                        <div class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 space-y-6">
+                            <p>
+                                The platform offers a user-friendly experience, allowing property owners to easily add their buildings for access to insightful analytical data. Adding a building involves completing a comprehensive form with essential information, ensuring the accuracy of subsequent reports.
+                            </p>
+                            <p>
+                                To enhance user engagement, we've introduced the gamification element. A progress bar keeps track of form completion, and each step is supported by clear explanations, illuminating the value of the provided data in analyzing property revenue potential.
+                            </p>
+                            <p>
+                                Additionally, timely notifications will gently remind users to revisit and complete the form. After adding all the buildings users own, they can have a convenient list or card view with all the core details with the future revenue possibilities.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 11. Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/20 to-transparent z-10"></div>
+                    <!-- Placeholder for IMG 6 -->
+                    <img src="sustainable-building-ui.png" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000" alt="Building Overview UI">
+                </div>
+            </section>
+
+            <!-- 12. Dashboard -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Comprehensive dashboard</h2>
+                        <div class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 space-y-6">
+                            <p>
+                                Once a user has completed the form, the system will generate comprehensive reports and revenue predictions for each individual building. These reports can be conveniently accessed through the insightful dashboard we created. Our team has gone the extra mile to ensure that the data is visually presented in a clear and easy-to-understand manner, with highly visible and readable charts.
+                            </p>
+                            <p>
+                                Furthermore, users can also assess and examine buildings that share similar characteristics based on the information provided. This helps to ensure the relevance and accuracy of the data, fostering a trustworthy and loyal attitude towards the platform.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-200 space-y-6 lg:pt-16">
+                        <p>
+                            The dashboard provides access to all the essential reports related to a specific building, allowing investors to analyze and evaluate the potential revenue that can be generated from the property, as well as the positive impact it can have on CO2 reduction. Additionally, users have the option to easily download the full reports to their own device.
+                        </p>
+                        <p>
+                            To unlock the complete view of the analytical data, users can choose to subscribe to the paid platform, which grants them different levels of access.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 13. Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-[#0c0621] relative overflow-hidden border-b border-border-subtle group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10 pointer-events-none"></div>
+                    <img src="sustainable-dashboard.png" class="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" alt="Dashboard UI">
+                    <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                        <source src="sustainable-dashboard.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </section>
+
+            <!-- 14. Branding -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-12">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Branding</h2>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
+                    <div>
+                        <h3 class="text-2xl font-medium text-white mb-4 scroll-reveal">SMARTcapital Brochure</h3>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                            During our collaboration, the client expanded our project scope, giving us the opportunity to take on additional tasks that included providing branding assistance with brochures.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-medium text-white mb-4 scroll-reveal delay-100">SMARTincome Brochure</h3>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-200">
+                            Our talented designers created visually captivating brochures that perfectly met the client's business needs. We maintained a strong focus on visual consistency, ensuring that every brochure we produced aligned seamlessly with the client's overall brand image.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Branding Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <!-- Height adjusted to accommodate full branding image -->
+                <div class="w-full overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10 pointer-events-none"></div>
+                    <img src="sustainable-branding.png" alt="Branding Visuals" class="w-full h-auto object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 15. Boosting Development -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="max-w-4xl">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-8 scroll-reveal">Boosting the development process</h2>
+                    <div class="space-y-6 text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                        <p>
+                            In our collaboration with the client, we provided comprehensive developer support to facilitate a smooth development process. We actively communicated with the developers to assist them in implementing the design efficiently, resulting in a successful and cohesive final product.
+                        </p>
+                        <p>
+                            By providing clear and detailed explanations of the design concepts and functionalities, we ensured a seamless transition from design to development.
+                        </p>
+                        <p>
+                            To maintain consistency and streamline the development process, we also created a design system and style guide. This documentation outlined design principles, components, and guidelines that developers could follow to ensure a cohesive and unified user experience across the product.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 16. Image (Edge-to-Edge) -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <!-- Placeholder for IMG 8 -->
+                    <img src="sustainable-dev-process.png" alt="Development Process" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 17. Testimonial -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-24">
+                <div class="mb-12">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Testimonial</h2>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <div class="flex items-center gap-4 mb-8 scroll-reveal delay-100">
+                             <img src="lucas.png" class="w-16 h-16 rounded-full object-cover border border-border-subtle" alt="Lucas Mezalira">
+                             <div>
+                                 <h4 class="text-xl font-medium text-white">Lucas Mezalira</h4>
+                                 <span class="text-text-muted font-light">CIO</span>
+                             </div>
+                        </div>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-200">
+                            "I'm the founder and software developer of a startup in the education industry. I was looking for a design company to help me with the UX/UI of the app. I chose Cieden because their portfolio really caught my attention and their affordable pricing. The team was transparent, describing their steps and timeline on different projects they've done. The project manager was incredibly responsive. Ciden's team were enthusiastic about the product and excited to give suggestions regarding features and subtleties of the app that I hadn't considered. In addition, they consulted me about everything the designers came up with, they were open to my feedback. Overall, Ciden's team did very well and provided me with the design that was easy for me to implement as a software developer."
+                        </p>
+                    </div>
+                    <!-- Map/Background Image -->
+                    <div class="relative opacity-50 scroll-reveal delay-300">
+                         <!-- Map and Icon removed as per request -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 18. View Other Work -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <h3 class="text-2xl font-medium text-white mb-8 scroll-reveal">View Other Work</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <a href="project-details.html" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-100">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img src="project-hero-laptop.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop';" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Merging features">
+                        </div>
+                        <div class="p-6 bg-[#0c0621]">
+                            <h4 class="text-lg font-medium text-white group-hover:text-accent transition-colors">Merging features of three conferencing tools</h4>
+                            <span class="text-sm text-text-muted">SaaS / Enterprise</span>
+                        </div>
+                    </a>
+                    <a href="payroll-details.html" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-200">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img src="payroll-hero.png" onerror="this.onerror=null; this.src='https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/e653544d-6a75-4821-9c72-3993a12da088_800w.png';" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Payroll Management">
+                        </div>
+                        <div class="p-6 bg-[#0c0621]">
+                            <h4 class="text-lg font-medium text-white group-hover:text-accent transition-colors">Payroll management system</h4>
+                            <span class="text-sm text-text-muted">Fintech</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 19. CTA Section -->
+            <section class="relative border-b border-border-subtle overflow-hidden scroll-reveal">
+                <div class="absolute inset-0 z-0 bg-black">
+                    <div class="absolute top-[-20%] left-[10%] w-[500px] h-[500px] bg-accent/20 rounded-full blur-[100px] blob"></div>
+                    <div class="absolute bottom-[-10%] right-[20%] w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[80px] blob" style="animation-delay: -2s;"></div>
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20"></div>
+                </div>
+
+                <div class="z-10 md:p-24 lg:p-32 flex flex-col md:flex-row gap-12 pt-12 pr-12 pb-12 pl-12 relative gap-x-12 gap-y-12 items-center justify-between">
+                    <div class="max-w-2xl">
+                        <h2 class="text-4xl font-medium text-white tracking-tight mb-6 drop-shadow-xl md:text-4xl">Have a Great Idea?</h2>
+                        <p class="text-lg font-light text-white/70 max-w-lg">
+                            7+ years of experience in interface design. I help both startups and enterprises design and launch successful digital products.
+                        </p>
+                    </div>
+                    
+                    <div class="w-full md:w-auto">
+                        <button class="group relative overflow-hidden bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 px-10 py-6 rounded-sm transition-all duration-300 hover:scale-105" style="--mouse-x: 187.9388427734375px; --mouse-y: 82.995361328125px;">
+                            <span class="z-10 uppercase group-hover:text-white flex items-center gap-3 text-xs font-bold text-white tracking-widest relative">
+                                Get In Contact
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-right" strokewidth="1.5" class="lucide lucide-arrow-right w-4 h-4 transition-transform group-hover:translate-x-1"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/20 to-accent/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Footer -->
+            <footer class="bg-bg-main relative z-10 scroll-reveal">
+                <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border-subtle border-b border-border-subtle">
+                    <a href="https://www.linkedin.com/in/denis-dudar-88274a164/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Linkedin</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="https://dribbble.com/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Dribbble</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="https://www.instagram.com/den.dudar/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Instagram</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Resume/CV</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                </div>
+
+                <div class="p-8 md:p-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-8 text-sm font-light text-text-muted">
+                    <div class="flex flex-col gap-2">
+                        <a href="mailto:deni.dudar@gmail.com" class="hover:text-white transition-colors">deni.dudar@gmail.com</a>
+                        <span class="font-mono text-xs opacity-50">+380 63 742 09 82</span>
+                    </div>
+                    
+                    <div class="flex flex-col md:items-end gap-2 text-right">
+                        <span>Lviv, Ukraine</span>
+                        <span class="flex items-center gap-2">
+                            Work at <span class="text-white font-normal">Cieden</span>
+                        </span>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- SAKURA Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons({
+            attrs: {
+                strokeWidth: 1.5
+            }
+        });
+        
+        // Mobile Menu Logic
+        function toggleMenu() {
+            let menu = document.getElementById('mobile-menu');
+            
+            if (!menu) {
+                const template = document.getElementById('mobile-menu-template');
+                if (template) {
+                    const clone = template.content.cloneNode(true);
+                    document.body.appendChild(clone);
+                    menu = document.getElementById('mobile-menu');
+                    
+                    menu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            toggleMenu();
+                        });
+                    });
+                }
+            }
+
+            const menuBtn = document.getElementById('menu-btn');
+            const body = document.body;
+            const isHidden = menu.classList.contains('hidden');
+            
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                body.style.overflow = 'hidden';
+                menuBtn.setAttribute('aria-expanded', 'true');
+                const closeBtn = menu.querySelector('button');
+                if(closeBtn) setTimeout(() => closeBtn.focus(), 50);
+            } else {
+                menu.classList.add('hidden');
+                body.style.overflow = '';
+                menuBtn.setAttribute('aria-expanded', 'false');
+                menuBtn.focus();
+            }
+        }
+
+        // Close menu on link click
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                const menu = document.getElementById('mobile-menu');
+                if (!menu.classList.contains('hidden')) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            const menu = document.getElementById('mobile-menu');
+            if (e.key === 'Escape' && menu && !menu.classList.contains('hidden')) {
+                toggleMenu();
+            }
+        });
+
+
+        // Scroll Observer (SAKURA Step 3)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+        // Mouse Tracker (SAKURA Flashlight)
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+
+</body></html>

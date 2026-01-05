@@ -276,9 +276,10 @@
             
             <!-- Hero Image Edge-to-Edge -->
             <section class="border-b border-border-subtle">
-                <div class="w-full aspect-[2/1] bg-border-subtle relative overflow-hidden rounded-none border-b border-border-subtle animate-reveal delay-200 group">
-                     <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                <div class="w-full aspect-[2/1] bg-border-subtle relative overflow-hidden rounded-none border-b border-border-subtle animate-reveal delay-200 group" onmouseenter="const v = this.querySelector('video'); if(v) v.play()" onmouseleave="const v = this.querySelector('video'); if(v) v.pause()">
+                     <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10 pointer-events-none"></div>
                      <img src="project-hero-laptop.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop';" alt="Project Mockup" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                     <video src="project-hero.mp4" loop muted playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"></video>
                 </div>
             </section>
 
@@ -287,11 +288,14 @@
                 <!-- Client Row -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 border-b border-border-subtle">
                     <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
-                        <h3 class="text-xl font-medium text-white scroll-reveal">About the client</h3>
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">About the client</h2>
                     </div>
                     <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 mb-6">
+                            A leading company with the mission to make education smarter and drive change through data-driven solutions turned to us to create a compelling and functional design for its internal solution. The client tackled a massive project aimed at optimizing their operational workflows and reducing expenses by merging three existing tools into an integral customized internal solution.
+                        </p>
                         <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
-                            A global technology company providing communication solutions for enterprise businesses. They were managing three distinct legacy tools for video conferencing, each with its own codebase and user base, leading to high maintenance costs and fragmented user experiences.
+                            This app is a more affordable and operationally optimized alternative to such complex web conferencing products as Adobe Connect or Microsoft Teams which the client used previously. It’s a unique software suite for conducting online meetings, webinars, workshops, training courses, surveys, and other real-time collective virtual experiences. Along with actually holding events, the platform provides services for their planning, managing, record-keeping, and templating.
                         </p>
                     </div>
                 </div>
@@ -299,11 +303,17 @@
                 <!-- Overview Row -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
                     <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
-                        <h3 class="text-xl font-medium text-white scroll-reveal">Overview</h3>
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">Overview</h2>
                     </div>
                     <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 mb-6">
+                            Considering major time constraints, our team quickly assigned three specialists to work on this challenging yet exciting project.
+                        </p>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 mb-6">
+                            Our team thoroughly researched the competitive landscape as well as analyzed the client’s internal workflows to make a solution that would satisfy their needs. Based on the data collected we made information architecture and then created a prototype to make the development process easier and save time and money for the client.
+                        </p>
                         <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
-                            The goal was to consolidate the best features of all three platforms into a single, modern web application. This unified solution needed to scale for thousands of concurrent users while offering a seamless experience for both hosts and participants.
+                            As a result, in 5 weeks we not only designed a prototype, improved the usability and look of the product but optimized all existing flows, and introduced new features, and multi-channel functionality.
                         </p>
                     </div>
                 </div>
@@ -321,15 +331,17 @@
             <section class="border-b border-border-subtle">
                  <!-- Challenges Row -->
                  <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 border-b border-border-subtle">
-                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
-                        <h3 class="text-xl font-medium text-white scroll-reveal">Challenges</h3>
+                    <div class="lg:col-span-4 px-8 md:px-12 lg:px-16 pt-[104px] pb-10 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">Challenges</h2>
                     </div>
-                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                    <div class="lg:col-span-8 px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
                         <ul class="space-y-4 text-lg text-text-muted font-light list-disc list-inside scroll-reveal delay-100">
-                            <li>Inconsistent UI patterns across legacy tools.</li>
-                            <li>Complex permission settings for enterprise hosts.</li>
-                            <li>Need for real-time analytics without performance lag.</li>
-                            <li>Resistance to change from long-time users of legacy tools.</li>
+                            <li>Incorporate three tools with different functionality into one full-scale platform that will preserve core features and facilitate all internal workflows;</li>
+                            <li>Optimally design extensive functionality without visually cluttering and overcharging users;</li>
+                            <li>Fit into tight timeframes and deliver exceptional results within one month of collaboration;</li>
+                            <li>Adapt to workflow instability and amend requirements with the maximum flexibility and deliver the tool which corresponds to provided requirements;</li>
+                            <li>Perform a modern and user-oriented tool design while taking into consideration multiple roles envisaged for this tool as well as extensive functionality which required extra effort from our team;</li>
+                            <li>Create a simple yet meaningful signup/login process for the multitude of actors and their roles in virtual experiences.</li>
                         </ul>
                     </div>
                 </div>
@@ -337,14 +349,17 @@
                 <!-- Results Row -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
                     <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
-                        <h3 class="text-xl font-medium text-white scroll-reveal">Results</h3>
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">Result</h2>
                     </div>
                     <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
                         <ul class="space-y-4 text-lg text-text-muted font-light list-disc list-inside scroll-reveal delay-100">
-                            <li>Reduced maintenance costs by 40% by unifying codebases.</li>
-                            <li>Increased user adoption rate by 25% within the first quarter.</li>
-                            <li>Positive feedback on the simplified scheduling workflow.</li>
-                            <li>Improved accessibility score to WCAG AA standards.</li>
+                            <li>On top of insights provided by the client, have done additional research for a deeper product understanding and created powerful information architecture based on the data and requirements collected;</li>
+                            <li>Met all time and budget requirements which were integral for the client;</li>
+                            <li>Developed a prototype to reduce the time and money needed during the process;</li>
+                            <li>Optimized user flows and improved UX/UI of existing tools used by employees;</li>
+                            <li>Envisaged quick and easy onboarding and convenient usage of the tool;</li>
+                            <li>Enhanced the product's branding to make it recognizable and convey the company's identity;</li>
+                            <li>Came up with an efficient design for a registration form builder to enable connecting to different devices and processing all questions from the admin role;</li>
                         </ul>
                     </div>
                 </div>
@@ -358,22 +373,27 @@
             </section>
 
             <!-- 6. Our Approach -->
-            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
                 <div class="max-w-4xl">
                     <h2 class="text-3xl md:text-4xl font-medium text-white mb-8 scroll-reveal">Our approach .</h2>
                     <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
-                        We started with a comprehensive audit of all three existing platforms. By mapping out every feature and user flow, we identified redundancies and gaps. We then conducted stakeholder interviews to prioritize features for the MVP. The design phase focused on creating a scalable component library that could support future growth.
+                        We understand that in the business world time is the most precious asset. Therefore, we are always ready to assist our clients even in the most tight deadlines. Our team has enough resources to quickly onboard and assign specialists with the most relevant expertise and skills to start working on the project as soon as possible and deliver excellent results.
                     </p>
                 </div>
             </section>
 
             <!-- 7. UX/UI Focus -->
-            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
-                <div class="mb-12">
-                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Main focus of our UX/UI change</h2>
-                    <p class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
-                        Simplifying the interface was key. We moved away from cluttered toolbars to a contextual action menu that appears only when needed.
-                    </p>
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-0">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Main focus of our UX/UI design</h2>
+                    <div class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        <p class="mb-4">Taking into account the competitive landscape as well as outcomes of our internal user needs research, we were concentrating on the three following objectives:</p>
+                        <ul class="list-disc list-inside mb-4 pl-4 space-y-2">
+                            <li>Designing extensive functionality not to visually clutter and overcharge users;</li>
+                            <li>Making the overall design easily recognizable inside the company and conveying the company's identity;</li>
+                        </ul>
+                        <p>Working through different flows for the multitude of actors and their roles in virtual experiences to successfully customize the design according to the user's request.</p>
+                    </div>
                 </div>
             </section>
 
@@ -386,13 +406,21 @@
             </section>
 
             <!-- 8. Participant View -->
-            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
                     <div>
                         <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Participant view</h2>
-                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
-                            For participants, the priority was ease of joining. We implemented a "one-click join" feature that bypasses login for guest users, while still maintaining security protocols. The in-call view highlights the active speaker and offers intuitive controls for muting and sharing.
-                        </p>
+                        <div class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 space-y-6">
+                            <p>
+                                Participants have a whole range of features for effective engagement with the virtual process, especially when it comes to educational/training events. This includes an intuitive user interface for watching and listening, taking notes, answering multiple-choice questions, and chatting with other participants in the most straightforward manner.
+                            </p>
+                            <p>
+                                Our team solved the challenge of creating a simple yet meaningful signup/login process for the multitude of actors and their roles in virtual experiences. It was paramount for the system to unmistakably identify the user type at the input while not overburdening the user experience at this stage.
+                            </p>
+                            <p>
+                                Our specialists have found a way out by incorporating a calendar and a direct invitation algorithm which comprises an exact date, time, and time zone of a particular event that a user might intend to join.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -406,12 +434,12 @@
             </section>
 
             <!-- 9. Host View -->
-            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
                     <div>
                         <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Host view</h2>
                         <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
-                            Hosts needed powerful controls without complexity. We designed a modular dashboard where hosts can manage breakout rooms, polls, and Q&A sessions. A dedicated "Backstage" area allows hosts and moderators to coordinate privately during live events.
+                            The role of a host has primary significance in virtual conferencing and learning events as they are directly responsible for organizing and conducting a particular meeting. Our specialists tried to make the host's planning process as smooth and seamless as possible. These convenient and elaborately designed features enable launching an event using a template or starting from scratch, switching between screens and sharing it with participants, uploading templates with users, and survey questions while having a space to leave notes during the meetings.
                         </p>
                     </div>
                 </div>
@@ -434,11 +462,11 @@
             </section>
 
             <!-- 11. Report Customization -->
-            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
                 <div class="mb-0 max-w-4xl">
                     <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Report customization</h2>
                     <p class="text-lg text-text-muted font-light scroll-reveal delay-100">
-                        Post-event analytics were crucial. We built a drag-and-drop report builder allowing admins to visualize attendance, engagement, and technical performance metrics.
+                        The client had a need to easily store and export the results of surveys. The team channeled efforts into enabling different report options while making them highly customizable to analyze this data further. We have worked thoroughly on making it possible and coming up with solutions to allow the analytic tool to process those reports.
                     </p>
                 </div>
             </section>
@@ -452,12 +480,17 @@
             </section>
 
             <!-- 13. Dev Support -->
-            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
                 <div class="mb-0">
-                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Ensure metrics and dev support</h2>
-                    <p class="text-lg text-text-muted font-light max-w-3xl scroll-reveal delay-100">
-                        We worked closely with the development team to ensure that the design system was implemented correctly. Regular audits and a shared Figma-to-Code workflow helped maintain high fidelity between design and production. We also established key performance indicators to track the success of the new features.
-                    </p>
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Documentation and dev support</h2>
+                    <div class="text-lg text-text-muted font-light max-w-3xl scroll-reveal delay-100 space-y-6">
+                        <p>
+                            First of all, we created a clickable prototype of the full product to showcase interactions to developers and streamline the further development process. Also, our team performed a detailed product front-end audit to make sure everything works seamlessly. We conducted a thorough QA and pointed out some issues to developers so they can improve the solution and deliver a functional and impeccable tool for their internal employees.
+                        </p>
+                        <p>
+                            In addition, our specialists developed a comprehensive design system for the client in order to streamline the implementation of all of their future ideas and envisioned projects. We took into consideration the client’s visual identity and made this design system consistent and easily recognizable.
+                        </p>
+                    </div>
                 </div>
             </section>
             
@@ -473,16 +506,16 @@
             <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
                 <h3 class="text-2xl font-medium text-white mb-8 scroll-reveal">View Other Work</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <a href="#" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-100">
+                    <a href="payroll-details.html" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-100">
                         <div class="aspect-video relative overflow-hidden">
-                            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/e653544d-6a75-4821-9c72-3993a12da088_800w.png" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Project 1">
+                            <img src="payroll-hero.png" onerror="this.onerror=null; this.src='https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/e653544d-6a75-4821-9c72-3993a12da088_800w.png';" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Project 1">
                         </div>
                         <div class="p-6 bg-[#0c0621]">
                             <h4 class="text-lg font-medium text-white group-hover:text-accent transition-colors">Payroll management system</h4>
                             <span class="text-sm text-text-muted">Fintech</span>
                         </div>
                     </a>
-                    <a href="#" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-200">
+                    <a href="sustainable-property-details.html" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-200">
                         <div class="aspect-video relative overflow-hidden">
                             <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/34947f57-9ab5-41c8-9683-e8d61d153345_800w.png?w=800&amp;q=80" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Project 2">
                         </div>

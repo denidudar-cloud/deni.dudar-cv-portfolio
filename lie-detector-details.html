@@ -1,0 +1,629 @@
+<html lang="en" class="scroll-smooth"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desktop Lie Detector - Denis Dudar</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: {
+                            main: '#0a051e',
+                            secondary: '#0e0725',
+                        },
+                        border: {
+                            subtle: 'rgba(255, 255, 255, 0.08)',
+                            light: 'rgba(255, 255, 255, 0.12)',
+                            active: 'rgba(255, 255, 255, 0.2)',
+                        },
+                        text: {
+                            muted: 'rgba(255, 255, 255, 0.6)',
+                            faint: 'rgba(255, 255, 255, 0.4)',
+                        },
+                        accent: '#c084fc',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    transitionTimingFunction: {
+                        'sakura': 'cubic-bezier(0.16, 1, 0.3, 1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a051e;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* SAKURA System Keyframes */
+        @keyframes reveal-up { 
+            0% { clip-path: inset(100% 0 0 0); transform: translateY(40px); opacity: 0; } 
+            100% { clip-path: inset(0 0 0 0); transform: translateY(0); opacity: 1; } 
+        }
+        @keyframes beam-v { 
+            0% { top: -200px; opacity: 0; } 
+            10% { opacity: 1; } 
+            90% { opacity: 1; } 
+            100% { top: 100%; opacity: 0; } 
+        }
+        @keyframes beam-h { 
+            0% { left: -200px; opacity: 0; } 
+            10% { opacity: 1; } 
+            71% { opacity: 1; } 
+            90% { opacity: 1; } 
+            100% { left: 100%; opacity: 0; } 
+        }
+
+        /* Utility Classes from SAKURA */
+        .animate-reveal {
+            opacity: 0;
+            animation: reveal-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Scroll Trigger Classes */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Delays */
+        .delay-100 { animation-delay: 0.1s; transition-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; transition-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; transition-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; transition-delay: 0.4s; }
+
+        /* Infinite Beams */
+        .beam-v {
+            position: absolute;
+            width: 1px;
+            height: 200px;
+            background: linear-gradient(180deg, transparent, #c084fc, transparent);
+            z-index: 10;
+            opacity: 0;
+            animation: beam-v 7s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            left: 0;
+            right: 0;
+            margin: auto;
+            pointer-events: none;
+        }
+        .beam-h {
+            position: absolute;
+            height: 1px;
+            width: 200px;
+            background: linear-gradient(90deg, transparent, #c084fc, transparent);
+            z-index: 10;
+            opacity: 0;
+            animation: beam-h 5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            pointer-events: none;
+        }
+
+        /* Flashlight Effect - Container */
+        .group {
+            position: relative;
+            --mouse-x: 0px;
+            --mouse-y: 0px;
+        }
+
+        /* Flashlight - Surface Overlay */
+        .flashlight-surface {
+            position: absolute; 
+            inset: 0; 
+            opacity: 0; 
+            transition: opacity 300ms; 
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.04), transparent 40%); 
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Flashlight - Border Overlay */
+        .flashlight-border {
+            position: absolute; 
+            inset: 0; 
+            opacity: 0; 
+            transition: opacity 300ms; 
+            background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.3), transparent 40%); 
+            z-index: 20; 
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); 
+            -webkit-mask-composite: xor; 
+            mask-composite: exclude; 
+            padding: 1px;
+            pointer-events: none;
+        }
+
+        .group:hover .flashlight-surface,
+        .group:hover .flashlight-border {
+            opacity: 1;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .blob { animation: float 10s ease-in-out infinite; }
+        @keyframes float {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+    </style>
+</head>
+<body class="selection:bg-accent selection:text-black overflow-x-hidden">
+
+    <!-- Background (component) added by Aura -->
+    <div class="aura-background-component fixed top-0 w-full h-screen -z-10" data-alpha-mask="80" style="; mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent)"><div class="aura-background-component top-0 w-full -z-10 absolute h-full">
+      <div data-us-project="HzcaAbRLaALMhHJp8gLY" class="absolute w-full h-full left-0 top-0 -z-10"></div>
+      <script type="text/javascript">
+        !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+      </script>
+    </div></div>
+
+    <!-- Fixed Grid Background -->
+    <div class="fixed inset-0 pointer-events-none z-0 flex justify-center w-full max-w-[1600px] mx-auto px-4 md:px-[6%]">
+        <div class="w-full h-full border-x border-border-subtle grid grid-cols-4">
+            <div class="border-r border-border-subtle h-full hidden md:block relative overflow-hidden">
+                <!-- Vertical Beam -->
+                <div class="beam-v opacity-30"></div>
+            </div>
+            <div class="border-r border-border-subtle h-full hidden md:block"></div>
+            <div class="border-r border-border-subtle h-full hidden md:block"></div>
+        </div>
+    </div>
+
+    <!-- Main Wrapper -->
+    <div class="md:px-[6%] max-w-[1600px] z-10 mr-auto ml-auto pr-4 pl-4 relative">
+        
+        <!-- Header -->
+        <header class="border-x border-border-subtle bg-bg-main/80 backdrop-blur-md sticky top-0 z-50 animate-reveal delay-100">
+            <div class="grid grid-cols-1 md:grid-cols-4 border-b border-border-subtle">
+                <!-- Logo -->
+                <div class="p-6 md:p-8 flex items-center justify-between md:justify-start group border-r border-border-subtle relative">
+                    <a href="index.html" class="relative w-12 h-12 rounded-sm overflow-hidden border border-border-light group-hover:border-accent transition-colors duration-500 block">
+                        <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/b45618e2-478a-4dc9-bf47-068fc90e8c7f_320w.png?w=800&amp;q=80" alt="Denis Dudar" class="group-hover:grayscale-0 transition-all duration-500 w-full h-full object-cover bg-center grayscale">
+                    </a>
+                    <button class="md:hidden text-text-muted transition-transform active:scale-95" onclick="toggleMenu()" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" id="menu-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+                    </button>
+                </div>
+                <!-- Nav Items -->
+                <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="hidden md:flex group p-6 md:p-8 items-center justify-between hover:bg-white/[0.02] transition-colors border-r border-border-subtle">
+                    <span class="text-sm font-normal text-text-muted group-hover:text-white transition-colors">Resume/CV</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text w-4 h-4 text-border-active group-hover:text-accent transition-colors group-hover:translate-x-1 duration-200"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                </a>
+                <a href="portfolio.html" class="hidden md:flex group p-6 md:p-8 items-center justify-between bg-white/[0.02] transition-colors border-r border-border-subtle">
+                    <span class="text-sm font-normal text-white transition-colors">Portfolio</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-accent transition-colors translate-x-1 duration-200"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                </a>
+                <a href="about.html" class="hidden md:flex group p-6 md:p-8 items-center justify-between hover:bg-white/[0.02] transition-colors">
+                    <span class="text-sm font-normal text-text-muted group-hover:text-white transition-colors">About</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent transition-colors group-hover:translate-x-1 duration-200"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                </a>
+            </div>
+            
+        </header>
+
+        <!-- Mobile Menu Overlay - Template -->
+        <template id="mobile-menu-template">
+            <div id="mobile-menu" class="hidden fixed inset-0 z-[9999]" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
+                <div class="absolute inset-0 bg-bg-main/95 backdrop-blur-xl transition-opacity" onclick="toggleMenu()"></div>
+                <div class="relative h-full w-full flex flex-col p-8 z-20 pointer-events-auto">
+                    <div class="flex justify-between items-center mb-16">
+                        <div class="w-12 h-12 rounded-sm overflow-hidden border border-border-light relative">
+                            <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/b45618e2-478a-4dc9-bf47-068fc90e8c7f_320w.png?w=800&amp;q=80" alt="Denis Dudar" class="w-full h-full object-cover grayscale opacity-80">
+                        </div>
+                        <button class="p-2 text-text-muted hover:text-white transition-colors" onclick="toggleMenu()" aria-label="Close menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                        </button>
+                    </div>
+                    <nav class="flex flex-col gap-8">
+                        <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>Resume/CV</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                        <a href="portfolio.html" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>Portfolio</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                        <a href="about.html" class="text-3xl font-light text-text-muted hover:text-white transition-colors flex items-center justify-between group cursor-pointer">
+                            <span>About</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right opacity-0 group-hover:opacity-100 transition-opacity text-accent"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <main class="border-x border-border-subtle bg-bg-main min-h-screen">
+            <!-- 1. Hero Section -->
+            <section class="border-b border-border-subtle pt-12 md:pt-24 lg:pt-32 pb-12 md:pb-16 lg:pb-20 px-8 md:px-12 lg:px-16 relative overflow-hidden">
+                <div class="max-w-4xl mx-auto text-center z-10 relative">
+                    <div class="flex items-center justify-center gap-2 mb-6 animate-reveal">
+                        <div class="w-2 h-2 rounded-full bg-accent"></div>
+                        <span class="text-sm font-mono text-accent uppercase tracking-widest">Security / Software</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white mb-12 animate-reveal delay-100 leading-tight">
+                        Desktop Lie Detector Software.
+                    </h1>
+                </div>
+            </section>
+            
+            <!-- Hero Image Edge-to-Edge -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle relative overflow-hidden rounded-none border-b border-border-subtle animate-reveal delay-200 group" onmouseenter="const v = this.querySelector('video'); if(v) v.play()" onmouseleave="const v = this.querySelector('video'); if(v) v.pause()">
+                     <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10 pointer-events-none"></div>
+                     <img src="lie-detector-hero.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop';" alt="Lie Detector Interface Hero" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000 relative z-0">
+                     <video src="lie-detector-ui-concept.mp4" loop muted playsinline class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20"></video>
+                </div>
+            </section>
+
+            <!-- 2. Overview -->
+            <section class="border-b border-border-subtle">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                    <div class="lg:col-span-4 p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-subtle">
+                        <h2 class="text-3xl md:text-4xl font-medium text-white scroll-reveal">Overview</h2>
+                    </div>
+                    <div class="lg:col-span-8 p-8 md:p-12 lg:p-16">
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100 mb-6">
+                            Our client is an innovative provider of human behavior analysis and screenings. With their high-accuracy AI-assisted video analytics functionalities, they've been revolutionizing the industry. However, their platform wasn't as user-friendly as they'd like, with several desktop applications that made the interface complex and challenging to navigate.
+                        </p>
+                        <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                            That's where Cieden came in! We helped our client redesign and unite their separate desktop applications into a single solution. The result? More intuitive navigation, new features, including analytics, wearables support, and expanded screening capabilities. With our help, our client provided an all-in-one tool for screening people on-site or analyzing video recordings.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Image -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="lie-detector-overview.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop';" alt="Overview - Interface Overview" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 4. Benefits & Challenges -->
+            <section class="border-b border-border-subtle">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
+                    <!-- Benefits -->
+                    <div class="p-8 md:p-12 lg:p-16 border-b md:border-b-0 md:border-r border-border-subtle">
+                        <h2 class="text-2xl md:text-3xl font-medium text-white mb-8 scroll-reveal">Benefits</h2>
+                        <ul class="space-y-4 text-lg text-text-muted font-light list-disc list-inside scroll-reveal delay-100">
+                            <li>A dream client – collaborative, open to new design ideas, and willing to trust our design team every step of the way.</li>
+                            <li>Very few designs iterations</li>
+                            <li>Sharp and clear product documentation as input for the design</li>
+                            <li>Client was ready to work hand in hand with the designers</li>
+                        </ul>
+                    </div>
+                    <!-- Challenges -->
+                    <div class="p-8 md:p-12 lg:p-16">
+                        <h2 class="text-2xl md:text-3xl font-medium text-white mb-8 scroll-reveal">Challenges</h2>
+                        <ul class="space-y-4 text-lg text-text-muted font-light list-disc list-inside scroll-reveal delay-100">
+                            <li>Tight and looming deadlines</li>
+                            <li>End-users are unreachable</li>
+                            <li>No chance to experience the actual solution, documentation only</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Simple but powerful -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="max-w-4xl">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Simple but powerful.</h2>
+                    <p class="text-lg text-text-muted font-light leading-relaxed scroll-reveal delay-100">
+                        Our SaaS solution was crafted to deliver functionality and power while keeping the user experience seamless, simple, and straightforward, all with a touch of sheer elegance.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 6. Image -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="lie-detector-simple-powerful.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop';" alt="Simple but Powerful Interface" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 7. UI Concept -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-0">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">UI Concept</h2>
+                    <div class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        <p class="mb-6">At the UI Concept stage, we immersed ourselves in the users' world and envisioned how this app would fit their needs.</p>
+                        <p>With a strong focus on video content analysis, our team experimented with layouts and balances to create the perfect user experience. Drawing inspiration from video editing tools, our Design Concept is tailored to integrate with the core function of media content processing seamlessly.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. Image -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full bg-border-subtle border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10 pointer-events-none"></div>
+                    <!-- Added ?v=1 to force reload if cached -->
+                    <img src="lie-detector-ui-concept.png?v=1" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=2000&auto=format&fit=crop';" alt="UI Concept Visualization" class="w-full h-auto object-cover opacity-90 group-hover:scale-[1.01] transition-transform duration-1000 relative z-0">
+                </div>
+            </section>
+
+            <!-- 9. Working Process -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-0">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Working Process.</h2>
+                    <p class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        Our services are tailored to fit your business like a glove, providing tangible value that will leave you feeling like a weight has been lifted off your shoulders. Can we hear a sigh of relief?
+                    </p>
+                </div>
+            </section>
+
+            <!-- 10. Discovery Phase -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-0">
+                    <h2 class="text-2xl md:text-3xl font-medium text-white mb-6 scroll-reveal">Discovery Phase</h2>
+                    <p class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        We believe every investigator deserves the best tools to do their job effectively. That's why we've been working hard to improve the software's interface and analysis capabilities based on extensive research and documentation. Our goal? To make the interrogation experience as smooth and intuitive as possible for investigators everywhere.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 11. Image -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="lie-detector-discovery.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=2070&auto=format&fit=crop';" alt="Discovery Phase Findings" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 12. Information Architecture -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-0">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Information Architecture</h2>
+                    <p class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        As we delved into the product documentation, we gained insights into how users interacted with the system, identifying their needs and wants. Armed with this knowledge, we set out to create an information architecture that would make running screening procedures a breeze. By seamlessly merging multiple modules, we've created an experience that makes screening procedures efficient and stress-free.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 13. Image -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2/1] bg-border-subtle overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="lie-detector-ia.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?q=80&w=2076&auto=format&fit=crop';" alt="Information Architecture Diagram" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 14. Design System -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-0">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Design System</h2>
+                    <div class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        <p class="mb-6">Our team has crafted a design system that guarantees a seamless and consistent user experience across all platforms and devices. This system comprises typography, color palette, iconography, and interactive components, which together steer the development of web and mobile applications.</p>
+                        <p>It's not just flexible and scalable, it's the secret ingredient to our project's success, eliminating inconsistencies, streamlining development, and delivering an exceptional user experience that users will love.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 15. Image -->
+            <section class="border-b border-border-subtle">
+                <div class="w-full aspect-[2752/3387] bg-border-subtle overflow-hidden border-b border-border-subtle relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-bg-main/50 to-transparent z-10"></div>
+                    <img src="lie-detector-design-system.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=2070&auto=format&fit=crop';" alt="Design System Components" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-1000">
+                </div>
+            </section>
+
+            <!-- 16. Documentation and dev support -->
+            <section class="border-b border-border-subtle px-8 md:px-12 lg:px-16 pt-[104px] pb-10">
+                <div class="mb-0">
+                    <h2 class="text-3xl md:text-4xl font-medium text-white mb-6 scroll-reveal">Documentation and dev support</h2>
+                    <p class="text-text-muted font-light max-w-2xl text-lg scroll-reveal delay-100">
+                        When designs are implemented into code, it's common for bugs – and even UX issues – to appear. This is why our designers provide continued support throughout the development process. With the help of Simran Butalia of BeBop Technology, we identified additional error states to design while continuously reviewing the interface's development to ensure that everything was ending up pixel perfect.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 17. View Other Work -->
+            <section class="border-b border-border-subtle p-8 md:p-12 lg:p-16">
+                <h3 class="text-2xl font-medium text-white mb-8 scroll-reveal">View Other Work</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <a href="project-details.html" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-100">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img src="project-hero-laptop.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop';" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Merging features">
+                        </div>
+                        <div class="p-6 bg-[#0c0621]">
+                            <h4 class="text-lg font-medium text-white group-hover:text-accent transition-colors">Merging features of three conferencing tools</h4>
+                            <span class="text-sm text-text-muted">SaaS / Enterprise</span>
+                        </div>
+                    </a>
+                    <a href="payroll-details.html" class="group block border border-border-subtle rounded-sm overflow-hidden scroll-reveal delay-200">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img src="payroll-hero.png" onerror="this.onerror=null; this.src='https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/e653544d-6a75-4821-9c72-3993a12da088_800w.png';" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Payroll Management">
+                        </div>
+                        <div class="p-6 bg-[#0c0621]">
+                            <h4 class="text-lg font-medium text-white group-hover:text-accent transition-colors">Payroll management system</h4>
+                            <span class="text-sm text-text-muted">Fintech</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 18. CTA Section -->
+            <section class="relative border-b border-border-subtle overflow-hidden scroll-reveal">
+                <div class="absolute inset-0 z-0 bg-black">
+                    <div class="absolute top-[-20%] left-[10%] w-[500px] h-[500px] bg-accent/20 rounded-full blur-[100px] blob"></div>
+                    <div class="absolute bottom-[-10%] right-[20%] w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[80px] blob" style="animation-delay: -2s;"></div>
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20"></div>
+                </div>
+
+                <div class="z-10 md:p-24 lg:p-32 flex flex-col md:flex-row gap-12 pt-12 pr-12 pb-12 pl-12 relative gap-x-12 gap-y-12 items-center justify-between">
+                    <div class="max-w-2xl">
+                        <h2 class="text-4xl font-medium text-white tracking-tight mb-6 drop-shadow-xl md:text-4xl">Have a Great Idea?</h2>
+                        <p class="text-lg font-light text-white/70 max-w-lg">
+                            7+ years of experience in interface design. I help both startups and enterprises design and launch successful digital products.
+                        </p>
+                    </div>
+                    
+                    <div class="w-full md:w-auto">
+                        <button class="group relative overflow-hidden bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 px-10 py-6 rounded-sm transition-all duration-300 hover:scale-105" style="--mouse-x: 187.9388427734375px; --mouse-y: 82.995361328125px;">
+                            <span class="z-10 uppercase group-hover:text-white flex items-center gap-3 text-xs font-bold text-white tracking-widest relative">
+                                Get In Contact
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-right" strokewidth="1.5" class="lucide lucide-arrow-right w-4 h-4 transition-transform group-hover:translate-x-1"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/20 to-accent/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Footer -->
+            <footer class="bg-bg-main relative z-10 scroll-reveal">
+                <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border-subtle border-b border-border-subtle">
+                    <a href="https://www.linkedin.com/in/denis-dudar-88274a164/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Linkedin</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="https://dribbble.com/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Dribbble</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="https://www.instagram.com/den.dudar/" target="_blank" rel="noopener noreferrer" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Instagram</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                    <a href="1_CV-UXUI-Product-Designer-Denis-Dudar.pdf" target="_blank" class="p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
+                        <span class="text-sm font-normal text-text-muted group-hover:text-white">Resume/CV</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right w-4 h-4 text-border-active group-hover:text-accent group-hover:translate-x-1 transition-all"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                    </a>
+                </div>
+
+                <div class="p-8 md:p-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-8 text-sm font-light text-text-muted">
+                    <div class="flex flex-col gap-2">
+                        <a href="mailto:deni.dudar@gmail.com" class="hover:text-white transition-colors">deni.dudar@gmail.com</a>
+                        <span class="font-mono text-xs opacity-50">+380 63 742 09 82</span>
+                    </div>
+                    
+                    <div class="flex flex-col md:items-end gap-2 text-right">
+                        <span>Lviv, Ukraine</span>
+                        <span class="flex items-center gap-2">
+                            Work at <span class="text-white font-normal">Cieden</span>
+                        </span>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- SAKURA Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons({
+            attrs: {
+                strokeWidth: 1.5
+            }
+        });
+        
+        // Mobile Menu Logic
+        function toggleMenu() {
+            let menu = document.getElementById('mobile-menu');
+            
+            if (!menu) {
+                const template = document.getElementById('mobile-menu-template');
+                if (template) {
+                    const clone = template.content.cloneNode(true);
+                    document.body.appendChild(clone);
+                    menu = document.getElementById('mobile-menu');
+                    
+                    menu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            toggleMenu();
+                        });
+                    });
+                }
+            }
+
+            const menuBtn = document.getElementById('menu-btn');
+            const body = document.body;
+            const isHidden = menu.classList.contains('hidden');
+            
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                body.style.overflow = 'hidden';
+                menuBtn.setAttribute('aria-expanded', 'true');
+                const closeBtn = menu.querySelector('button');
+                if(closeBtn) setTimeout(() => closeBtn.focus(), 50);
+            } else {
+                menu.classList.add('hidden');
+                body.style.overflow = '';
+                menuBtn.setAttribute('aria-expanded', 'false');
+                menuBtn.focus();
+            }
+        }
+
+        // Close menu on link click
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                const menu = document.getElementById('mobile-menu');
+                if (!menu.classList.contains('hidden')) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            const menu = document.getElementById('mobile-menu');
+            if (e.key === 'Escape' && menu && !menu.classList.contains('hidden')) {
+                toggleMenu();
+            }
+        });
+
+
+        // Scroll Observer (SAKURA Step 3)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+        // Mouse Tracker (SAKURA Flashlight)
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+
+</body></html>
